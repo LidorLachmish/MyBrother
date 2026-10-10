@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ברכה לאחי</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #f3f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Heebo', Arial, sans-serif;
+      padding: 1.8rem;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 35%, rgba(120, 170, 230, 0.45) 1.8%, transparent 2%),
+                        radial-gradient(circle at 75% 80%, rgba(240, 200, 110, 0.4) 1.5%, transparent 1.8%);
+      background-size: 50px 50px, 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stage {
+      position: relative;
+      width: min(920px, 96vw);
+      height: min(700px, 85vh);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    /* ===== מעטפה כחולה-כהה ===== */
+    .envelope {
+      position: relative;
+      width: min(470px, 78vw);
+      aspect-ratio: 1.45 / 1;
+      background: linear-gradient(145deg, #2c4f80, #14294b);
+      border-radius: 32px 32px 26px 26px;
+      box-shadow: 0 28px 50px -18px rgba(15, 35, 70, 0.5),
+                  0 0 0 3px rgba(240, 210, 140, 0.35),
+                  inset 0 1px 4px rgba(200, 225, 255, 0.45);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.3s, opacity 0.4s;
+      transform-style: preserve-3d;
+    }
+    .envelope:hover { transform: translateY(-6px); box-shadow: 0 38px 55px -18px rgba(10, 25, 55, 0.7); }
+
+    .flap {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, #3a62a0, #1d3a68);
+      border-radius: 32px 32px 26px 26px;
+      clip-path: polygon(0% 0%, 100% 0%, 50% 54%);
+      z-index: 5;
+      transform-origin: top center;
+      transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: inset 0 5px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .wax-seal {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 58px;
+      height: 58px;
+      background: radial-gradient(circle at 40% 35%, #f3d98f, #b8892f);
+      border-radius: 50%;
+      z-index: 12;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 4px rgba(255, 245, 210, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.45s ease;
+      pointer-events: none;
+    }
+    .wax-seal::after { content: "⭐"; font-size: 30px; }
+
+    .envelope.open { transform: translateY(-8px) scale(0.97); }
+    .envelope.open .flap { transform: rotateX(-180deg); }
+    .envelope.open .wax-seal { opacity: 0; transform: translateX(-50%) scale(0.2); transition: 0.4s; }
+
+    .envelope.hidden-env { opacity: 0; pointer-events: none; transform: scale(0.92); transition: opacity 0.5s ease, transform 0.5s; }
+    .envelope.reset-env { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); transition: opacity 0.5s ease, transform 0.4s ease; }
+
+    /* ===== קלף המכתב ===== */
+    .letter-panel {
+      position: absolute;
+      width: min(760px, 92vw);
+      height: min(620px, 78vh);
+      background: linear-gradient(135deg, #ffffff, #f5f9fe);
+      border-radius: 20px 38px 38px 38px;
+      box-shadow: 0 45px 70px -28px rgba(15, 35, 70, 0.35),
+                  inset 0 0 0 1px rgba(130, 170, 220, 0.7),
+                  0 0 0 12px rgba(44, 79, 128, 0.08);
+      padding: 2rem 2rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: scale(0.96) translateY(40px);
+      transition: opacity 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1), transform 0.55s ease-out;
+      pointer-events: none;
+    }
+    .letter-panel.visible { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+    .letter-panel.hiding { opacity: 0; transform: scale(0.96) translateY(20px); transition: opacity 0.5s ease, transform 0.4s ease; pointer-events: none; }
+
+    .letter-header {
+      text-align: center;
+      border-bottom: 2px solid #d6e4f2;
+      padding-bottom: 0.6rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .letter-header::after {
+      content: "✦";
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: #d4a647;
+      background: white;
+      padding: 0 10px;
+    }
+
+    .greeting {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 800;
+      color: #2f5d94;
+      letter-spacing: 1px;
+    }
+    .sub-greeting { font-size: 1.05rem; color: #6f95c2; margin-top: 2px; font-weight: 400; }
+
+    .scroll-content { flex: 1; overflow-y: auto; padding: 0.3rem 0.6rem; margin: 0.6rem 0 0.2rem; scroll-behavior: smooth; }
+    .scroll-content::-webkit-scrollbar { width: 4px; background: #e6eff8; border-radius: 20px; }
+    .scroll-content::-webkit-scrollbar-thumb { background: #a9c4e2; border-radius: 20px; }
+
+    #romanticMsg, #romanticMsg span, .line, .line span {
+      font-size: 1.9rem !important;
+      font-weight: 600 !important;
+      color: #1f3a5f;
+      line-height: 1.5;
+    }
+    @media (max-width: 600px) {
+      #romanticMsg, #romanticMsg span, .line, .line span { font-size: 1.45rem !important; }
+    }
+    @media (min-width: 1200px) {
+      #romanticMsg, #romanticMsg span, .line, .line span { font-size: 2.2rem !important; }
+    }
+
+    .line { margin-bottom: 0.8em; opacity: 0; transform: translateY(8px); animation: fadeInUp 0.55s forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    .btn-next {
+      background: rgba(230, 240, 252, 0.95);
+      border: 1.5px solid #b5cde8;
+      padding: 0.5rem 2rem;
+      border-radius: 60px;
+      font-family: 'Heebo', Arial, sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2f5d94;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.25s;
+      width: fit-content;
+      margin: 0.6rem auto 0.2rem;
+    }
+    .btn-next:hover { background: #d9e8f8; border-color: #8fb2da; color: #1f4a7d; transform: scale(0.98); box-shadow: 0 4px 14px rgba(30, 70, 120, 0.15); }
+    .btn-next:active { transform: scale(0.96); }
+
+    .whisper { text-align: center; font-size: 0.95rem; margin-top: 8px; color: #7fa3cc; font-weight: 400; }
+
+    /* כפתור קול */
+    .sound-toggle {
+      position: fixed;
+      top: calc(14px + env(safe-area-inset-top, 0px));
+      left: 14px;
+      z-index: 1000;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1.5px solid #b5cde8;
+      background: rgba(255, 255, 255, 0.92);
+      color: #2f5d94;
+      font-size: 1.4rem;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 4px 14px rgba(30, 70, 120, 0.18);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .sound-toggle:hover { background: #e6f0fb; transform: scale(1.06); }
+    .sound-toggle.off { color: #9aa9bb; background: #eef2f6; }
+
+    /* ניצוצות זהובים */
+    .sparkle-love {
+      position: fixed;
+      width: 7px;
+      height: 7px;
+      background: #f6d27a;
+      border-radius: 50%;
+      filter: blur(1px);
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.9;
+      box-shadow: 0 0 15px #e8b84a, 0 0 4px #4a86d6;
+      animation: floatHeartSpark 2s ease-out forwards;
+    }
+    @keyframes floatHeartSpark {
+      0% { transform: scale(0.2) translateY(0); opacity: 0; }
+      25% { transform: scale(1.2) translateY(-6px); opacity: 1; }
+      100% { transform: scale(0.5) translateY(-55px) translateX(var(--dx, 20px)); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .letter-panel { padding: 1.3rem; }
+      .btn-next { font-size: 1.1rem; padding: 0.4rem 1.3rem; }
+      .greeting { font-size: 2rem; }
+      .whisper { font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+<button class="sound-toggle" id="soundToggle" aria-label="הפעלה/השתקה של הקראה" title="הקראה בקול">🔊</button>
+
+<div class="stage">
+  <div class="envelope" id="premiumEnvelope">
+    <div class="flap"></div>
+    <div class="wax-seal"></div>
+  </div>
+
+  <div class="letter-panel" id="letterPanel">
+    <div class="letter-header">
+      <div class="greeting">לאחי</div>
+      <div class="sub-greeting">∞ כמה מילים מהלב ∞</div>
+    </div>
+    <div class="scroll-content">
+      <div id="romanticMsg"></div>
+    </div>
+    <button class="btn-next" id="nextBtnLove">המשפט הבא</button>
+    <div class="whisper">⁕ 💙 אחים לנצח ⁕</div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ===== ערוך כאן את נוסח הברכה =====
+    const loveTexts = [
+      "לאח הקטן שלי, החבר הכי טוב שלי, והאדם הכי יקר לי בעולם!",
+      "מעט באיחור אבל עם כוונה עמוקה בלב.",
+      "לקח לי קצת זמן לסיים לכתוב את הברכה שלך, שאני מנסה כבר כמה ימים להסביר אהבה שאי אפשר לתאר אותה במילים.",
+      "יש ימים בשנה שהם הרבה מעבר לתאריך בלוח השנה, והיום הזה הוא בדיוק כזה בשבילי.",
+      "זה היום שבו נולדת היום המרגש בחיי, אבל בשבילי זו גם הזדמנות לעצור לרגע את כל המרוץ, להסתכל עליך, על האדם שאתה, על הדרך שאתה עושה ועל מי שאתה הופך להיות, ולהגיד לך את כל הדברים שלפעמים בשגרה אנחנו לא עוצרים מספיק כדי לומר.",
+      "אז קודם כול, מזל טוב לאח שלי, לבן אדם שהוא הרבה מעבר למשפחה בשבילי, הוא חלק ממני, מהלב שלי, מהחיים שלי ומהסיפור שלי.",
+      "לפעמים אני חושב על זה כמה זכיתי בך.",
+      "לא בחרתי מי יהיה אחי, אבל אם הייתה לי אפשרות לבחור את האדם שיהיה לצדי לאורך החיים, האדם שאוכל לצחוק איתו בלי סוף, לדבר איתו על הכול, להתייעץ איתו, לסמוך עליו בעיניים עצומות ולדעת שגם ברגעים הכי מורכבים הוא יהיה שם.",
+      "ואפילו מלהבין אחד את השני גם בלי מילים.",
+      "כי אתה לא רק אחי הקטן.",
+      "אתה החבר הכי טוב שלי, האדם שאני יכול להיות לידו הכי אני, בלי מסכות, בלי הסברים ובלי צורך להעמיד פנים שהכול תמיד בסדר.",
+      "יש בינינו קשר שלא צריך להוכיח את עצמו בכל יום, כי הוא נמצא שם גם בשתיקות, גם בצחוקים, גם בשיחות הקטנות וגם ברגעים שבהם מספיק מבט אחד כדי להבין הכול.",
+      "ואם יש משהו שאני רוצה שתדע, זה שהמקום שלך בחיים שלי הוא מקום שאף אחד אחר לא יכול למלא.",
+      "לא משנה כמה נגדל, כמה החיים ישתנו, לאן כל אחד מאיתנו יגיע וכמה הדרך עוד תהיה ארוכה אתה תמיד תהיה אחי הקטן, האדם שאני מאחל לו כפול ממה שאאחל לעצמי!",
+      "שאני רוצה לראות מצליח, שמח, מגשים את עצמו ובעיקר יודע כמה הוא אהוב.",
+      "אני גאה בך, אחי.",
+      "גאה בך הרבה יותר ממה שאתה כנראה מבין.",
+      "אני גאה באדם שאתה, בדרך שאתה עושה, באחריות שאתה לוקח על עצמך בכל, ביכולת שלך לעבוד קשה, להתמיד, להתמודד עם אתגרים ולהמשיך קדימה גם כשהדרך לא תמיד פשוטה.",
+      "אני גאה לראות אותך בונה את עצמך, צובר ניסיון, מתבגר, לומד על העולם ובעיקר מגלה עוד ועוד על מי שאתה רוצה להיות.",
+      "אני מקבל ממך המון השראה.",
+      "יודע שלא כל יום פשוט, שלא תמיד הכול מסתדר בדיוק כמו שתכננת ושגם מאחורי החיוך והאנרגיות שלך יש ימים עמוסים, מחשבות, לחצים והתמודדויות שלא כולם רואים.",
+      "אבל דווקא בגלל זה אני מעריך אותך כל כך.",
+      "כי בעיניי, הגדולה של בן אדם לא נמדדת רק ברגעים שבהם הכול הולך לו, אלא גם בדרך שבה הוא מתמודד כשהמציאות דורשת ממנו יותר.",
+      "ואתה מוכיח לי פעם אחר פעם שיש בך את הכוחות האלה.",
+      "אני רואה אותך ממשיך בדרך שלך ברפאל, עובד, מתפתח, לוקח אחריות וצובר עוד ניסיון.",
+      "אני רואה אותך ממשיך לתת מעצמך גם במילואים, עם כל מה שהשירות דורש ממך, ואני רוצה שתזכור שגם כשאתה רגיל פשוט לעשות את מה שצריך ולהמשיך הלאה, יש בזה משהו שאני מעריך ומכבד מאוד.",
+      "ובין אם אתה מבין/יודע או שלא.. זה פשוט ייחודי רק לך.",
+      "אני מאחל לך שתמיד תדע לשלב בין האחריות והמחויבות שלך לבין הזכות לחיות את החיים שלך.",
+      "שתדע שגם לך מותר לעצור, לנוח, לנשום, ליהנות, להתפנק, לצחוק בלי סיבה ולשים את עצמך במקום הראשון כשאתה צריך.",
+      "אתה לא חייב להיות חזק בכל רגע, לא חייב להספיק הכול ולא חייב להוכיח לאף אחד שום דבר.",
+      "הערך שלך לא נמדד בכמה עשית היום, בכמה הספקת או בכמה הצלחת — הוא נמצא במי שאתה, גם ברגעים שבהם אתה פשוט אתה.",
+      "ואחי, אל תשכח אף פעם כמה עוד מחכה לך.",
+      "החיים שלך רק מתחילים להיפתח, ויש לך עוד כל כך הרבה דברים לגלות, לחלום, לבנות ולהגשים.",
+      "אני מאחל לך שתהיה לך האומץ לחלום בגדול, אבל גם הסבלנות לבנות את החלומות האלה צעד אחר צעד.",
+      "שתדע להציב לעצמך מטרות גבוהות, לעבוד בשבילן ולא לוותר כשהדרך מתארכת.",
+      "שתדע לזהות הזדמנויות, לקבל החלטות מתוך ביטחון ולהבין שגם אם לפעמים הדרך משתנה, זה לא אומר שאתה מתרחק מהמקום שאליו אתה רוצה להגיע.",
+      "אל תפחד לטעות, לשנות כיוון, להתחיל מחדש או לבחור בדרך שלא כולם מבינים.",
+      "אל תמדוד את עצמך לפי הקצב של אחרים ואל תיתן לרעש מסביב לגרום לך לשכוח מה באמת חשוב לך.",
+      "לכל אחד יש את המסלול שלו, את הזמן שלו ואת הדרך שבה הוא נבנה, ואני מאחל לך שתלמד לסמוך על הדרך שלך בדיוק כמו שאתה לומד לסמוך על עצמך.",
+      "אני רוצה שתמשיך להיות רעב לחיים, להיות סקרן, ללמוד, להתפתח ולשאוף ליותר אבל לעולם אל תאבד את הדברים שכבר הופכים אותך למי שאתה.",
+      "את הלב שלך, את הנאמנות שלך, את הצחוק שלך, את האנרגיות שאתה מביא איתך לכל מקום ואת היכולת שלך לגרום לאנשים סביבך להרגיש טוב ונינוחות.",
+      "כי בסופו של דבר, אחי, הצלחה אמיתית היא לא רק להגיע רחוק.",
+      "היא להגיע רחוק ולהישאר נאמן לעצמך.",
+      "היא לבנות חיים שאתה גאה בהם, להיות מוקף באנשים שאתה אוהב, לקום בבוקר עם תחושת משמעות ולדעת שאתה לא רק מסמן מטרות — אתה גם נהנה מהדרך אליהן.",
+      "ובכל מה שקשור לאהבה, אני מאחל לך שתמשיך לבנות עם זהר את הדבר היפה שיש לכם",
+      "אני שמח לראות אותך לצד מישהי שאתה אוהב, מישהי שהופכת להיות חלק מהחיים שלך ומהדרך שאתה עובר.",
+      "אני מאחל לשניכם שתמשיכו לצמוח יחד, לפרגן אחד לשנייה, לצחוק, להתרגש, לחלום, לטייל, לצבור חוויות ולבנות זיכרונות שיהפכו עם השנים לסיפור המיוחד שלכם.",
+      "שתהיה ביניכם אהבה שיש בה לא רק פרפרים ורגעים יפים, אלא גם חברות אמיתית, הקשבה, כבוד, ביטחון ותחושה של בית.",
+      "שתמיד תדעו להיות שם אחד בשביל השנייה, לשמוח בהצלחות, לחזק ברגעים הקשים ולזכור שאתם באותו צד, גם כשהחיים מציבים אתגרים.",
+      "אני מאחל לך שתהיה מאושר באמת, שתדע להעריך את מה שיש לך בזמן שאתה ממשיך לשאוף למה שעוד תרצה להשיג, ושיהיו לך בחיים אנשים שמאמינים בך, מרימים אותך ורוצים לראות אותך מצליח לא פחות ממך.",
+      "אבל מעל כל האיחולים האלה, יש משהו אחד שאני מאחל לך יותר מכול: שתהיה שלם עם עצמך ושמח בחיים שאתה בונה.",
+      "שתקום בבוקר ותרגיש שאתה במקום שנכון לך.",
+      "שתדע שאתה אהוב לא בגלל מה שאתה עושה בשביל אחרים, לא בגלל מה שאתה משיג ולא בגלל מה שאתה מצליח להוכיח אלא פשוט בגלל מי שאתה עם הלב הענק שלך.",
+      "ויש משהו נוסף שיושב לי עמוק בלב, משהו שאני לא בטוח שאי פעם באמת הצלחתי להסביר לך עד הסוף, ואולי אפילו לא הצלחתי להסביר לעצמי.",
+      "אם יש כישלון אחד בחיים שלי שאני מרגיש את הכאב שלו עדיין בגוף, זה כל מה שעברנו בתקופה ההיא, הימים שהובילו לכך שהדרכים שלנו התפצלו, אחרי שזכינו לחיות יחד תחת אותה קורת גג, ולחלוק לא רק מקום מגורים אלא גם שגרה, רגעים, חוויות וחלק כל כך משמעותי מהחיים שלנו.",
+      "אני עדיין נושא איתי את הכאב הזה, עדיין מעכל, עדיין חושב על מה שהיה, על מה שהוביל אותנו לשם, על הדברים שהייתי רוצה שיהיו אחרת ועל הרגע שבו משהו שהיה כל כך קרוב וטבעי הפך למציאות אחרת, שבה כל אחד מאיתנו ממשיך את חייו בבית אחר.",
+      "אני לא יודע אם המילה כישלון באמת מצליחה להסביר את מה שאני מרגיש, כי מאחוריה מסתתרים געגוע, אכזבה, כאב ואולי גם תחושה עמוקה של אובדן של משהו שהיה יקר לי ברמות שקשה להסביר.",
+      "יש פצעים שלא נעלמים רק כי הזמן עובר, בין אם הם הובילו למצב יותר טוב/יותר נכון… יש דברים שהלב ממשיך לעבד גם הרבה אחרי שהחיים כבר המשיכו הלאה.",
+      "וזה אחד הדברים האלה בשבילי.",
+      "אני לא כותב לך את זה כדי להחזיר אותנו אחורה, או לפתוח מחדש את מה שהיה או לתת לכאב להגדיר אותנו, אלא כי אתה אחי הקטן, החבר הכי טוב שלי, והקשר שלנו חשוב לי מדי מכדי להעמיד פנים שדברים מסוימים לא השאירו בי חותם.",
+      "אני מתגעגע לפשטות שהייתה לנו, לקרבה היומיומית, לידיעה שאנחנו חולקים את אותו הבית ואת כל מה שמגיע איתו, ולתחושה הזאת שהיינו יחד בתוך תקופה בחיים שאי אפשר פשוט לשחזר.",
+      "אני לא יודע אם אי פעם אצליח להסביר לך עד כמה התקופה הזאת נגעה בי ועד כמה אני עדיין לוקח ממנה דברים איתי, אבל אני יודע דבר אחד: שום כאב, שום תקופה מורכבת ושום שינוי במציאות לא יגרמו לי להפסיק לאהוב אותך או לוותר על הקשר שלנו.",
+      "אם יש משהו שאני מאחל לעצמי ולנו, זה שנדע לקחת מכל מה שעברנו את מה שיחזק אותנו, שנדע להסתכל קדימה בלי למחוק את העבר, ושנמשיך לבנות בינינו קשר שיהיה חזק מספיק כדי להכיל גם תקופות שלא היו פשוטות.",
+      "כי בסופו של דבר, מעבר לכל מה שהיה, לכל מה שכאב ולכל מה שהשתנה, אתה אחי, אתה חלק בלתי נפרד ממני, ואני תמיד ארצה שנמצא את הדרך להיות קרובים, לצבור עוד זיכרונות וליצור יחד פרקים חדשים וטובים יותר.",
+      "אז שתדע שתמיד יהיה לך מקום שבו תוכל להוריד את כל ההגנות, להניח את כל הדאגות בצד ולהרגיש שאתה לא צריך להתמודד עם הכול לבד.",
+      "שתדע שתמיד יש לך משפחה שאוהבת אותך, *ושיש לך אותי!* לא רק כשיש משהו לחגוג, לא רק כשהכול הולך טוב, ולא רק כשאתה צריך עצה אלא גם כשאתה עייף, כשאתה מבולבל, כשקשה לך, בשביל לקבור גופה או כשאתה פשוט צריך מישהו שיהיה לידך בלי לשאול יותר מדי שאלות.",
+      "אני רוצה שתדע שאני כאן בשבילך בכל שלב ובכל גיל ולכל מצב.",
+      "אם תצטרך כתף, תקבל כתף.",
+      "אם תצטרך עצה, תמיד אנסה לעזור.",
+      "אם תצטרך מישהו שיזכיר לך מי אתה וכמה אתה מסוגל, אני אהיה שם להזכיר לך.",
+      "ואם פשוט תרצה לצחוק, לדבר שטויות ולשכוח לרגע מכל מה שמסביב אתה יודע שאני תמיד כאן וזמין עבורך.",
+      "אני לא יכול להבטיח שהחיים תמיד יהיו קלים, אבל אני כן יכול להבטיח לך שלא תצטרך לעבור אותם לבד!",
+      "וזו אחת ההבטחות הכי חשובות שאני יכול לתת לך בתור אחיך הגדול.",
+      "ברקע הזה אחד הדברים שהכי מרגשים אותי לראות אצלך הוא הדרך שבה אתה לוקח את עולם ההשקעות ברצינות, באחריות ובבגרות.",
+      "מעבר לזה שאתה אחי, יש לי זכות מיוחדת לקרוא לך שותף בכיר בנדל״ן, לבנות איתך משהו שהוא הרבה מעבר לעסקה או לנכס, ולדעת שאנחנו משקיעים לא רק כסף, אלא גם אמון, מחשבה, חזון ועתיד שאנחנו רוצים ליצור לעצמנו.",
+      "אני מסתכל עליך ורואה איך הדברים שלימדתי אותך על נדל״ן ושוק ההון, על השקעות, על קבלת החלטות ועל החשיבות של חשיבה לטווח ארוך, הופכים בהדרגה לידע שאתה יודע ליישם בעצמך.",
+      "אתה לא מתייחס לזה כאל משחק או כאל דרך לחפש רווח מהיר, אלא לומד, בוחן, חושב, לוקח אחריות ומבין שהצלחה אמיתית נבנית מסבלנות, ממשמעת ומהיכולת לקבל החלטות שקולות גם כשלא הכול ודאי.",
+      "אין דבר שמשמח אותי יותר מלראות שאתה לא רק מקשיב לדברים שאני משתף איתך, אלא באמת לוקח אותם ברצינות, מפתח חשיבה עצמאית ומתקדם בדרך שלך.",
+      "אני גאה בך!",
+      "לדעת שהצלחתי להעביר לך משהו בעל ערך, ושאתה לוקח את הכלים האלה והופך אותם לחלק מהדרך שבה אתה בונה את העתיד שלך.",
+      "אבל יותר מההצלחות ומהתוצאות, אני גם רואה (וזה ממש לא מובן מאליו) את הדרך שלך בהתהליך הזה: באחריות שלך, ברצון שלך ללמוד, ביכולת שלך לחשוב קדימה ובכך שאתה מבין שכסף הוא לא רק מספרים בחשבון, אלא גם כלי שיכול לתת חופש בחירה, ביטחון והזדמנות לבנות את החיים שאנחנו רוצים.",
+      "אני מאחל כאן לשננו שנמשיך להיות שותפים טובים, שנדע לקבל החלטות נכונות, ללמוד גם מהצלחות וגם מטעויות, לשמור תמיד על האמון בינינו ולבנות יחד דברים שנוכל להסתכל עליהם בעוד שנים רבות בגאווה.",
+      "ומעבר לכל נכס שנקנה, לכל השקעה שתצליח ולכל יעד כלכלי שנכבוש, אני מקווה שהשותפות הזאת תמיד תישאר גם דרך נוספת שבה נצמח יחד כאחים.",
+      "כי מבחינתי, לראות אותך מצליח זה לא רק לראות מישהו שלימדתי אותו מתקדם זה לראות את אחי הקטן בונה לעצמו עתיד, ואני רוצה שתדע שאמשיך תמיד לפרגן לך, להאמין בך, ללמד אותך ולהיות הראשון ששמח בכל צעד שלך קדימה.",
+      "אז אחי הקטן, היום אתה בן 24, ואני מאחל לך שהשנה הזאת תהיה שנה של פריצות דרך.",
+      "שנה שבה דברים שחיכית להם יתחילו להתחבר, שבה תרגיש שאתה מתקדם בכיוונים הנכונים, שבה תעז יותר, תאמין בעצמך יותר ותיתן לעצמך את המקום שמגיע לך.",
+      "שתהיה לך שנה מלאה בבריאות, בשקט נפשי, באהבה, בפרנסה טובה, בהזדמנויות חדשות, בהצלחות גדולות וברגעים קטנים שיגרמו לך לעצור ולחשוב כמה טוב לך.",
+      "שתזכה לראות את העבודה הקשה שלך נושאת פרי, שתצליח בכל דרך שתבחר, שתצבור חוויות שלא תשכח לעולם ושיהיו לך מספיק סיבות לחייך גם בלי סיבה מיוחדת.",
+      "אני מאחל לך שתמשיך להיות חזק, אבל גם שתדע מתי מותר להיות פגיע.",
+      "שתמשיך להיות שאפתן, אבל גם שתדע לעצור וליהנות ממה שכבר השגת.",
+      "שתמשיך לתת מעצמך לאחרים, אבל לעולם לא תשכח לתת גם לעצמך.",
+      "שתמשיך להיות האדם שכולם יכולים לסמוך עליו, אבל תמיד תזכור שגם לך מותר להישען על אחרים.",
+      "ותמיד, אבל תמיד, תשמור על הילד שעדיין נמצא בתוכך זה שיודע לצחוק מכל הלב, לרקוד כאילו אף אחד לא מסתכל, להתרגש מדברים פשוטים, לחלום בלי גבולות ולמצוא אור גם ביום רגיל לחלוטין.",
+      "כי עם כל האחריות, הבגרות והדברים שאתה בונה לעצמך, אני מקווה שלעולם לא תאבד את הקלילות, השמחה והניצוץ המיוחד שלך.",
+      "ואם יש משהו שאני רוצה שתיקח איתך מהברכה הזאת, זה שתדע כמה אתה משמעותי עבורי.",
+      "לפעמים בתוך החיים אנחנו מתרגלים לאנשים שהכי קרובים אלינו.",
+      "אנחנו יודעים שהם שם, אנחנו אוהבים אותם, אבל לא תמיד עוצרים להגיד להם כמה המקום שלהם עמוק בלב שלנו.",
+      "אז היום אני רוצה שתשמע את זה בצורה הכי ברורה שיש: החיים שלי טובים יותר כי אתה חלק מהם.",
+      "אתה לא רק מישהו שאני אוהב כי אנחנו אחים.",
+      "אתה אדם שאני מעריך, שאני סומך עליו, שאני נהנה להיות בחברתו, שאני לומד ממנו ושאני רוצה שיהיה לצדי עוד עשרות שנים.",
+      "אני רוצה להיות שם ברגעים הגדולים שלך, לראות אותך מגשים חלומות, לחגוג איתך הצלחות, להתרגש מהדברים שתבנה לעצמך ולדעת שגם בעוד שנים רבות, כשנסתכל אחורה על כל מה שעברנו, עדיין נוכל לצחוק מאותם דברים שרק שנינו מבינים.",
+      "אני רוצה שנמשיך לשמור על הקשר שלנו, להשקיע בו, לדבר על הכול, לפרגן אחד לשני, לצבור זיכרונות ולדעת שלא משנה מה ישתנה בחיים תמיד יהיה לנו את הדבר הזה שהוא רק שלנו.",
+      "הקשר בין שני אחים שהם גם חברים אמיתיים.",
+      "אני לא יודע מה בדיוק החיים מביאים איתם בשנים הבאות, אבל אני יודע דבר אחד: אני רוצה לראות אותך מאושר.",
+      "אני רוצה לראות אותך מצליח בדרך שלך.",
+      "אני רוצה שתהיה גאה בעצמך כמו שאני גאה בך, שתאמין בעצמך כמו שאני מאמין בך, ושתדע שגם ברגעים שבהם אתה בעצמך לא רואה עד כמה אתה מסוגל — אני תמיד אראה את זה.",
+      "יום הולדת 24 שמח, אח שלי אתה הכי עמוק בלב שלי",
+      "שתהיה לך שנה שתזכור לכל החיים.",
+      "שנה שתקרב אותך לחלומות שלך, שתמלא לך את הלב באנשים הנכונים, שתביא איתה אהבה אמיתית, בריאות, שמחה, הצלחה, שלווה והמון רגעים שבהם תרגיש שאתה בדיוק במקום שבו אתה צריך להיות.",
+      "תמשיך להיות מי שאתה, תמשיך לחלום, תמשיך לצחוק, תמשיך לגדול, תמשיך להעז ותמשיך ללכת בדרך שלך בראש מורם ובלב פתוח.",
+      "אל תיתן לאף אחד להקטין את החלומות שלך, ואל תשכח לרגע כמה טוב וכמה כוח יש באדם שאתה.",
+      "ותזכור שתמיד, לא משנה בן כמה תהיה, לא משנה לאן תגיע ולא משנה כמה החיים ישתנו, וכמה גבוה תהיה, בשבילי אתה תמיד תהיה אחי הקטן, החבר הכי טוב שלי, האדם הכי יקר לי בעולם, ואדם שאני מודה על הזכות להיות אחיו.",
+      "אוהב אותך אהבה שאין לה תנאים, שאין לה גבולות ושאין באמת מילים שיכולות להסביר אותה.",
+      "גאה בך על מי שאתה, על מי שהיית ועל מי שעוד תהיה.",
+      "מזל טוב, אח שלי הקטן",
+      "אוהב אותך עד אין סוף, מאז ומתמיד ולגלגולים הבאים"
+    ];
+    const FINAL_BTN = 'באהבה, אחיך';
+    const RESTART_BTN = 'לקריאה מחדש';
+    const NEXT_BTN = 'למשפט הבא';
+
+    // ===== הקראה (Web Speech API – חינמי, מובנה בדפדפן) =====
+    const synth = window.speechSynthesis || null;
+    let hebVoice = null;
+    let soundOn = true;
+
+    function pickVoice() {
+      if (!synth) return;
+      const voices = synth.getVoices();
+      hebVoice = voices.find(v => /^he/i.test(v.lang)) ||
+                 voices.find(v => /hebrew|עברית|carmit/i.test(v.name)) || null;
+    }
+    if (synth) {
+      pickVoice();
+      synth.onvoiceschanged = pickVoice;
+    }
+
+    // "פתיחת נעילה" של הקול בלחיצה ראשונה (חשוב לאייפון/סאפרי)
+    function unlockSpeech() {
+      if (!synth) return;
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      synth.speak(u);
+    }
+
+    function speak(text) {
+      return new Promise(resolve => {
+        if (!synth || !soundOn) return resolve();
+        synth.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'he-IL';
+        if (hebVoice) u.voice = hebVoice;
+        u.rate = 0.88;
+        u.pitch = 1;
+        let done = false;
+        const finish = () => { if (!done) { done = true; clearTimeout(timer); resolve(); } };
+        const timer = setTimeout(finish, text.length * 180 + 2500); // גיבוי אם onend לא מופעל
+        u.onend = finish;
+        u.onerror = finish;
+        synth.speak(u);
+      });
+    }
+
+    const soundBtn = document.getElementById('soundToggle');
+    if (!synth) soundBtn.style.display = 'none';
+    soundBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      soundBtn.textContent = soundOn ? '🔊' : '🔇';
+      soundBtn.classList.toggle('off', !soundOn);
+      if (!soundOn && synth) synth.cancel();
+    });
+
+    // ===== אלמנטים =====
+    const envelope = document.getElementById('premiumEnvelope');
+    const panel = document.getElementById('letterPanel');
+    const msgBox = document.getElementById('romanticMsg');
+    const nextButton = document.getElementById('nextBtnLove');
+
+    let currentLine = 0;
+    let isOpen = false;
+    let isTyping = false;
+    let isFinished = false;
+    let isClosing = false;
+
+    function createSparkle() {
+      const spark = document.createElement('div');
+      spark.className = 'sparkle-love';
+      spark.style.left = Math.random() * window.innerWidth + 'px';
+      spark.style.top = Math.random() * window.innerHeight * 0.7 + window.innerHeight * 0.15 + 'px';
+      spark.style.setProperty('--dx', (Math.random() - 0.5) * 70 + 'px');
+      document.body.appendChild(spark);
+      setTimeout(() => spark.remove(), 2000);
+    }
+    function sparkleBurst(count = 2) {
+      for (let i = 0; i < count; i++) setTimeout(createSparkle, i * 90);
+    }
+
+    function typeLoveText(text, element) {
+      return new Promise(resolve => {
+        let pos = 0;
+        element.textContent = '';
+        function addChar() {
+          if (pos < text.length) {
+            element.textContent += text[pos];
+            pos++;
+            if (text[pos] === ' ' || text[pos] === ',' || Math.random() > 0.88) sparkleBurst(1);
+            setTimeout(addChar, 55);
+          } else resolve();
+        }
+        addChar();
+      });
+    }
+
+    async function showNextLine() {
+      if (isTyping || isClosing) return;
+      if (isFinished) { await closeLetterAndReset(); return; }
+
+      isTyping = true;
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'line';
+      const span = document.createElement('span');
+      lineDiv.appendChild(span);
+      msgBox.appendChild(lineDiv);
+
+      // מקלידים ומקריאים במקביל, וממתינים ששניהם יסתיימו
+      const text = loveTexts[currentLine];
+      await Promise.all([typeLoveText(text, span), speak(text)]);
+      currentLine++;
+      isTyping = false;
+
+      const scrollArea = document.querySelector('.scroll-content');
+      if (scrollArea) setTimeout(() => scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' }), 60);
+
+      if (currentLine === loveTexts.length) {
+        isFinished = true;
+        nextButton.innerHTML = FINAL_BTN;
+        sparkleBurst(5);
+      } else {
+        nextButton.innerHTML = NEXT_BTN;
+      }
+    }
+
+    async function closeLetterAndReset() {
+      if (isClosing) return;
+      isClosing = true;
+      if (synth) synth.cancel();
+
+      panel.classList.remove('visible');
+      panel.classList.add('hiding');
+      sparkleBurst(4);
+
+      setTimeout(() => {
+        msgBox.innerHTML = '';
+        currentLine = 0;
+        isFinished = false;
+        isOpen = false;
+        isTyping = false;
+
+        envelope.classList.remove('hidden-env', 'open');
+        envelope.classList.add('reset-env');
+
+        nextButton.innerHTML = RESTART_BTN;
+        panel.classList.remove('hiding');
+
+        setTimeout(() => envelope.classList.remove('reset-env'), 100);
+        isClosing = false;
+      }, 550);
+    }
+
+    function openEnvelopeMagic() {
+      if (isOpen || isClosing) return;
+      isOpen = true;
+      unlockSpeech();
+      envelope.classList.add('open');
+
+      setTimeout(() => {
+        envelope.classList.add('hidden-env');
+        panel.classList.add('visible');
+        setTimeout(() => {
+          if (currentLine === 0 && !isFinished && !isTyping) showNextLine();
+        }, 180);
+      }, 600);
+    }
+
+    envelope.addEventListener('click', () => {
+      if (!isOpen && !isClosing) openEnvelopeMagic();
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (!isOpen) { openEnvelopeMagic(); return; }
+      if (isTyping || isClosing) return;
+      if (isFinished) closeLetterAndReset();
+      else showNextLine();
+    });
+
+    const observer = new MutationObserver(() => {
+      const scrollDiv = document.querySelector('.scroll-content');
+      if (scrollDiv && panel.classList.contains('visible') && !isClosing) {
+        scrollDiv.scrollTo({ top: scrollDiv.scrollHeight, behavior: 'smooth' });
+      }
+    });
+    observer.observe(msgBox, { childList: true, subtree: true });
+
+    setTimeout(() => { if (!isOpen) sparkleBurst(2); }, 500);
+  })();
+</script>
+</body>
+</html>
